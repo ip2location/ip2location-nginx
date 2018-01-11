@@ -24,6 +24,14 @@ Installation:
    make install
    ```
 
+   or
+
+   ```
+   ./configure --add-dynamic-module=/absolute/path/to/nginx-ip2location-VERSION
+   make
+   make install
+   ```
+
 
 
 
@@ -31,6 +39,13 @@ Nginx Configuration
 -----
 
 Insert the configuration below to your `nginx.conf`.
+
+```
+Syntax:  load_module modules/ngx_http_ip2location_module.so;
+Default: -
+Context: main
+Description: Load IP2Location Nginx module if it was compiled as dynamic.
+```
 
 ```
 Syntax:  ip2location on|off
