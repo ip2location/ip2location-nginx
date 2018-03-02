@@ -6,13 +6,13 @@ Description:
 
 The Nginx IP2Location module enables user to easily perform client's IP to geographical location lookup by using IP2Location database.
 
-The IP2Location database can be downloaded from http://lite.ip2location.com (Free) or http://www.ip2location.com (Commercial).
+The IP2Location database can be downloaded from https://lite.ip2location.com (Free) or https://www.ip2location.com (Commercial).
 
 
 Installation:
 ------------
 
-1. Download IP2location C library from http://www.ip2location.com/developers/c
+1. Download IP2location C library from https://www.ip2location.com/developers/c
 
 2. Change the path to IP2Location library in "ngx_http_ip2location_module.c".
 
@@ -119,6 +119,6 @@ Use the IPv6 BIN file if you need to query BOTH IPv4 and IPv6 addresses.
 
 Support
 -------
-Please visit us at http://www.ip2location.com for services and databases we offer.
+Please visit us at https://www.ip2location.com for services and databases we offer.
 
 For support, please email us at support@ip2location.com
