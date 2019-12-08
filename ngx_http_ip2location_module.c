@@ -35,6 +35,17 @@ typedef struct {
     ngx_flag_t                      proxy_recursive;
 } ngx_http_ip2location_main_conf_t;
 
+typedef struct {
+    ngx_cycle_t                      *cycle;
+    ngx_http_ip2location_main_conf_t *main_cf;
+} ngx_http_ip2location_clean_ctx_t;
+
+static ngx_int_t
+ngx_http_ip2location_init_process(ngx_cycle_t *cycle);
+
+static void
+ngx_http_ip2location_exit_process(ngx_cycle_t *cycle);
+
 static void *
 ngx_http_ip2location_create_main_conf(ngx_conf_t *cf);
 
@@ -144,10 +155,10 @@ ngx_module_t  ngx_http_ip2location_module = {
     NGX_HTTP_MODULE,
     NULL,
     NULL,
+    ngx_http_ip2location_init_process,
     NULL,
     NULL,
-    NULL,
-    NULL,
+    ngx_http_ip2location_exit_process,
     NULL,
     NGX_MODULE_V1_PADDING
 };
@@ -298,6 +309,73 @@ static ngx_http_variable_t ngx_http_ip2location_vars[] = {
 };
 
 
+static ngx_int_t ngx_http_ip2location_init_process(ngx_cycle_t *cycle)
+{
+    ngx_http_ip2location_main_conf_t  *imcf;
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+                   "ip2location init process");
+
+    imcf = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_ip2location_module);
+
+    /* Open the database if it is not already open. */
+    if ((imcf->enabled) && (imcf->database == NULL)) {
+        if (imcf->filename.len == 0) {
+            return NGX_OK;
+        }
+
+        imcf->database = IP2Location_open((char *)imcf->filename.data);
+
+        if (imcf->database == NULL) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                          "can not open database file \"%V\" in %s:%ui",
+                          &imcf->filename, imcf->database_file, imcf->database_line);
+            return NGX_OK;
+        }
+
+        if (IP2Location_open_mem(imcf->database, imcf->access_type) < 0) {
+            /* Close will delete the allocated database instance. */
+            IP2Location_close(imcf->database);
+            imcf->database = NULL;
+
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                          "can not load database file %V using \"%V\" access type in %s:%ui",
+                          &imcf->filename, &imcf->access_type_name, imcf->database_file,
+                          imcf->database_line);
+
+            return NGX_OK;
+        } else {
+            ngx_log_debug1(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+                           "ip2location opened database %V",
+                           &imcf->filename);
+        }
+    }
+
+    return NGX_OK;
+}
+
+
+static void ngx_http_ip2location_exit_process(ngx_cycle_t *cycle)
+{
+    ngx_http_ip2location_main_conf_t  *imcf;
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+                   "ip2location exit process");
+
+    imcf = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_ip2location_module);
+
+    if (imcf->database != NULL) {
+        IP2Location_close(imcf->database);
+
+        if (imcf->access_type == IP2LOCATION_SHARED_MEMORY) {
+            IP2Location_DB_del_shm();
+        }
+
+        imcf->database = NULL;
+    }
+}
+
+
 static void * ngx_http_ip2location_create_main_conf(ngx_conf_t *cf)
 {
     ngx_http_ip2location_main_conf_t  *imcf;
@@ -314,9 +392,23 @@ static void * ngx_http_ip2location_create_main_conf(ngx_conf_t *cf)
 
 void ngx_http_ip2location_cleanup(void *data)
 {
-    IP2Location *loc = data;
-    IP2Location_close(loc);
-    IP2Location_DB_del_shm();
+    ngx_http_ip2location_clean_ctx_t *clean_ctx = data;
+
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, clean_ctx->cycle->log, 0,
+                   "ip2location cleanup");
+
+    if (clean_ctx->main_cf->database != NULL) {
+        IP2Location_close(clean_ctx->main_cf->database);
+
+        if (clean_ctx->main_cf->access_type == IP2LOCATION_SHARED_MEMORY) {
+            IP2Location_DB_del_shm();
+        }
+
+        ngx_log_debug0(NGX_LOG_DEBUG_HTTP, clean_ctx->cycle->log, 0,
+                   "ip2location cleanup database closed");
+
+        clean_ctx->main_cf->database = NULL;
+    }
 }
 
 
@@ -324,6 +416,7 @@ static char * ngx_http_ip2location_init_main_conf(ngx_conf_t *cf, void *data)
 {
     ngx_http_ip2location_main_conf_t  *imcf = data;
     ngx_pool_cleanup_t                *cln;
+    ngx_http_ip2location_clean_ctx_t  *clean_ctx;
 
     if (imcf->access_type == NGX_CONF_UNSET) {
         imcf->access_type = IP2LOCATION_SHARED_MEMORY;
@@ -338,38 +431,26 @@ static char * ngx_http_ip2location_init_main_conf(ngx_conf_t *cf, void *data)
             return NGX_CONF_ERROR;
         }
 
-        imcf->database = IP2Location_open((char *)imcf->filename.data);
-
-        if (imcf->database == NULL) {
-            ngx_log_error(NGX_LOG_EMERG, cf->log, 0, "can not open database file \"%V\" in %s:%ui", &imcf->filename, imcf->database_file, imcf->database_line);
-            return NGX_CONF_ERROR;
-        }
-
-        if (IP2Location_open_mem(imcf->database, imcf->access_type) == -1) {
-
-            IP2Location_close(imcf->database);
-
-            ngx_log_error(NGX_LOG_EMERG, cf->log, 0,
-                          "can not load database file %V using \"%V\" access type in %s:%ui",
-                          &imcf->filename,
-                          &imcf->access_type_name,
-                          imcf->database_file,
-                          imcf->database_line);
-
-            return NGX_CONF_ERROR;
-        }
-
         cln = ngx_pool_cleanup_add(cf->pool, 0);
         if (cln == NULL) {
             return NGX_CONF_ERROR;
         }
 
-        cln->data = imcf->database;
+        clean_ctx = ngx_pcalloc(cf->cycle->pool, sizeof(ngx_http_ip2location_clean_ctx_t));
+        if (clean_ctx == NULL) {
+            return NGX_CONF_ERROR;
+        }
+
+        clean_ctx->cycle = cf->cycle;
+        clean_ctx->main_cf = imcf;
+
+        cln->data = clean_ctx;
         cln->handler = ngx_http_ip2location_cleanup;
     }
 
     return NGX_CONF_OK;
 }
+
 
 static void * ngx_http_ip2location_create_loc_conf(ngx_conf_t *cf)
 {
