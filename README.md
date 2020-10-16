@@ -12,7 +12,7 @@ The IP2Location database can be downloaded from https://lite.ip2location.com (Fr
 
 ### Installation
 
-1. Download IP2location C library from https://www.ip2location.com/developers/c
+1. Download IP2location C library from https://github.com/chrislim2888/IP2Location-C-Library
 
 2. Compile and install IP2Location C library.
 
@@ -68,38 +68,40 @@ The IP2Location database can be downloaded from https://lite.ip2location.com (Fr
 Insert the configuration below to your `nginx.conf`.
 
 ```
-Syntax:  load_module modules/ngx_http_ip2location_module.so;
-Default: -
-Context: main
-Description: Load IP2Location Nginx module if it was compiled as dynamic.
+Syntax      : load_module modules/ngx_http_ip2location_module.so;
+Default     : -
+Context     : main
+Description : Load IP2Location Nginx module if it was compiled as dynamic.
+```
+
+
+
+```
+Syntax      : ip2location_access_type file_io|shared_memory|cache_memory
+Default     : cache_memory
+Context     : http
+Description : Set the method used for lookup.
 ```
 
 ```
-Syntax:  ip2location_access_type file_io|shared_memory|cache_memory
-Default: shared_memory
-Context: http
-Description: Set the method used for lookup.
+Syntax      : ip2location_database path
+Default     : none
+Context     : http
+Description : The absolute path to IP2Location BIN database.
 ```
 
 ```
-Syntax:  ip2location_database path
-Default: none
-Context: http
-Description: The absolute path to IP2Location BIN database.
+Syntax      : ip2location_proxy_recursive on|off
+Default     : off
+Context     : http
+Description : Enable recursive search in the x-forwarded-for headers.
 ```
 
 ```
-Syntax:  ip2location_proxy_recursive on|off
-Default: off
-Context: http
-Description: Enable recursive search in the x-forwarded-for headers.
-```
-
-```
-Syntax:  ip2location_proxy cidr|address
-Default: none
-Context: http
-Description: Set a list of proxies to translate x-forwarded-for headers for.
+Syntax      : ip2location_proxy cidr|address
+Default     : none
+Context     : http
+Description : Set a list of proxies to translate x-forwarded-for headers for.
 ```
 
 
