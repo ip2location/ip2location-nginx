@@ -49,7 +49,7 @@ static ngx_command_t ngx_http_ip2location_commands[] = {
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE12,
 		ngx_http_ip2location_access_type,
 		NGX_HTTP_MAIN_CONF_OFFSET,
-		0,
+		offsetof(ngx_http_ip2location_conf_t, access_type),
 		NULL
 	},
 	{
@@ -70,7 +70,6 @@ static ngx_command_t ngx_http_ip2location_commands[] = {
 	},
 	ngx_null_command
 };
-
 
 static ngx_http_module_t ngx_http_ip2location_module_ctx = {
 	ngx_http_ip2location_add_variables,	/* preconfiguration */
@@ -350,6 +349,7 @@ ngx_http_ip2location_add_variables(ngx_conf_t *cf)
 
 	for (v = ngx_http_ip2location_vars; v->name.len; v++) {
 		var = ngx_http_add_variable(cf, &v->name, v->flags);
+
 		if (var == NULL) {
 			return NGX_ERROR;
 		}
@@ -374,7 +374,6 @@ ngx_http_ip2location_create_conf(ngx_conf_t *cf)
 	}
 
 	conf->proxy_recursive = NGX_CONF_UNSET;
-	conf->access_type = NGX_CONF_UNSET;
 
 	cln = ngx_pool_cleanup_add(cf->pool, 0);
 	if (cln == NULL) {
@@ -394,7 +393,6 @@ ngx_http_ip2location_init_conf(ngx_conf_t *cf, void *conf)
 	ngx_http_ip2location_conf_t	*gcf = conf;
 
 	ngx_conf_init_value(gcf->proxy_recursive, 0);
-	ngx_conf_init_value(gcf->access_type, IP2LOCATION_CACHE_MEMORY);
 
 	return NGX_CONF_OK;
 }
@@ -421,7 +419,7 @@ ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	gcf->handler = IP2Location_open((char *) value[1].data);
 
 	if (gcf->handler == NULL) {
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unable to open database file \"%V\".", &value[1]);
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unable to open database file \"%s\".", value[1].data);
 		return NGX_CONF_ERROR;
 	}
 
@@ -450,7 +448,7 @@ ngx_http_ip2location_access_type(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	} else if (ngx_strcasecmp((u_char *)"shared_memory", value[1].data) == 0) {
 		gcf->access_type = IP2LOCATION_SHARED_MEMORY;
 	} else {
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unkown access type \"%V\".", &value[1]);
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unkown access type \"%s\".", value[1].data);
 		return NGX_CONF_ERROR;
 	}
 
