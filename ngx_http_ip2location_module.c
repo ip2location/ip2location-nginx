@@ -238,12 +238,14 @@ ngx_http_ip2location_get_str_value(ngx_http_request_t *r, ngx_http_variable_valu
 	}
 
 	val = *(char **) ((char *) record + data);
+	
 	if (val == NULL) {
 		goto no_value;
 	}
 
 	len = ngx_strlen(val);
 	v->data = ngx_pnalloc(r->pool, len);
+	
 	if (v->data == NULL) {
 		IP2Location_free_record(record);
 		return NGX_ERROR;
@@ -279,12 +281,14 @@ ngx_http_ip2location_get_float_value(ngx_http_request_t *r, ngx_http_variable_va
 	IP2LocationRecord	*record;
 
 	record = ngx_http_ip2location_get_records(r);
+	
 	if (record == NULL) {
 		v->not_found = 1;
 		return NGX_OK;
 	}
 
 	v->data = ngx_pnalloc(r->pool, NGX_INT64_LEN + 5);
+	
 	if (v->data == NULL) {
 		IP2Location_free_record(record);
 		return NGX_ERROR;
@@ -309,12 +313,11 @@ ngx_http_ip2location_get_records(ngx_http_request_t *r)
 
 	gcf = ngx_http_get_module_main_conf(r, ngx_http_ip2location_module);
 
-	if (gcf->handler)
-	{
-		ngx_addr_t			addr;
-		ngx_array_t			*xfwd;
-		u_char				p[NGX_INET6_ADDRSTRLEN + 1];
-		size_t				size;
+	if (gcf->handler) {
+		ngx_addr_t	addr;
+		ngx_array_t	*xfwd;
+		u_char		p[NGX_INET6_ADDRSTRLEN + 1];
+		size_t		size;
 
 		addr.sockaddr = r->connection->sockaddr;
 		addr.socklen = r->connection->socklen;
@@ -365,10 +368,11 @@ ngx_http_ip2location_add_variables(ngx_conf_t *cf)
 static void *
 ngx_http_ip2location_create_conf(ngx_conf_t *cf)
 {
-	ngx_pool_cleanup_t	 *cln;
+	ngx_pool_cleanup_t			*cln;
 	ngx_http_ip2location_conf_t	*conf;
 
 	conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_ip2location_conf_t));
+	
 	if (conf == NULL) {
 		return NULL;
 	}
@@ -376,6 +380,7 @@ ngx_http_ip2location_create_conf(ngx_conf_t *cf)
 	conf->proxy_recursive = NGX_CONF_UNSET;
 
 	cln = ngx_pool_cleanup_add(cf->pool, 0);
+	
 	if (cln == NULL) {
 		return NULL;
 	}
@@ -424,8 +429,6 @@ ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	}
 
 	if (IP2Location_open_mem(gcf->handler, gcf->access_type) == -1) {
-		IP2Location_close(gcf->handler);
-		
 		ngx_log_error(NGX_LOG_EMERG, cf->log, 0, "Unable to load database using \"%V\" access type.", &gcf->access_type);
 		return NGX_CONF_ERROR;
 	}
@@ -470,12 +473,14 @@ ngx_http_ip2location_proxy(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	if (gcf->proxies == NULL) {
 		gcf->proxies = ngx_array_create(cf->pool, 4, sizeof(ngx_cidr_t));
+
 		if (gcf->proxies == NULL) {
 			return NGX_CONF_ERROR;
 		}
 	}
 
 	c = ngx_array_push(gcf->proxies);
+
 	if (c == NULL) {
 		return NGX_CONF_ERROR;
 	}
