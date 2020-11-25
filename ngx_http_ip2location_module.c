@@ -428,10 +428,7 @@ ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return NGX_CONF_ERROR;
 	}
 
-	if (IP2Location_open_mem(gcf->handler, gcf->access_type) == -1) {
-		ngx_log_error(NGX_LOG_EMERG, cf->log, 0, "Unable to load database using \"%V\" access type.", &gcf->access_type);
-		return NGX_CONF_ERROR;
-	}
+	IP2Location_open_mem(gcf->handler, gcf->access_type);
 
 	return NGX_CONF_OK;
 }
