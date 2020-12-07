@@ -13,7 +13,6 @@
 
 typedef struct {
 	IP2Location			*handler;
-	ngx_int_t			access_type;
 	ngx_array_t			*proxies;
 	ngx_flag_t			proxy_recursive;
 } ngx_http_ip2location_conf_t;
@@ -30,7 +29,6 @@ static IP2LocationRecord *ngx_http_ip2location_get_records(ngx_http_request_t *r
 static void *ngx_http_ip2location_create_conf(ngx_conf_t *cf);
 static char *ngx_http_ip2location_init_conf(ngx_conf_t *cf, void *conf);
 static char *ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-static char *ngx_http_ip2location_access_type(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_ip2location_proxy(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_ip2location_cidr_value(ngx_conf_t *cf, ngx_str_t *net, ngx_cidr_t *cidr);
 static void ngx_http_ip2location_cleanup(void *data);
@@ -42,14 +40,6 @@ static ngx_command_t ngx_http_ip2location_commands[] = {
 		ngx_http_ip2location_database,
 		NGX_HTTP_MAIN_CONF_OFFSET,
 		0,
-		NULL
-	},
-	{
-		ngx_string("ip2location_access_type"),
-		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE12,
-		ngx_http_ip2location_access_type,
-		NGX_HTTP_MAIN_CONF_OFFSET,
-		offsetof(ngx_http_ip2location_conf_t, access_type),
 		NULL
 	},
 	{
@@ -428,29 +418,7 @@ ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return NGX_CONF_ERROR;
 	}
 
-	IP2Location_open_mem(gcf->handler, gcf->access_type);
-
-	return NGX_CONF_OK;
-}
-
-static char *
-ngx_http_ip2location_access_type(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
-	ngx_http_ip2location_conf_t	*gcf = conf;
-	ngx_str_t					*value;
-
-	value = cf->args->elts;
-
-	if (ngx_strcasecmp((u_char *)"file_io", value[1].data) == 0) {
-		gcf->access_type = IP2LOCATION_FILE_IO;
-	} else if (ngx_strcasecmp((u_char *)"cache_memory", value[1].data) == 0) {
-		gcf->access_type = IP2LOCATION_CACHE_MEMORY;
-	} else if (ngx_strcasecmp((u_char *)"shared_memory", value[1].data) == 0) {
-		gcf->access_type = IP2LOCATION_SHARED_MEMORY;
-	} else {
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unkown access type \"%s\".", value[1].data);
-		return NGX_CONF_ERROR;
-	}
+	IP2Location_open_mem(gcf->handler, IP2LOCATION_CACHE_MEMORY);
 
 	return NGX_CONF_OK;
 }
@@ -522,11 +490,6 @@ ngx_http_ip2location_cleanup(void *data)
 
 	if (gcf->handler) {
 		IP2Location_close(gcf->handler);
-
-		if (gcf->access_type == IP2LOCATION_SHARED_MEMORY) {
-			IP2Location_DB_del_shm();
-		}
-
 		gcf->handler = NULL;
 	}
 }

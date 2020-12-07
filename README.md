@@ -74,15 +74,6 @@ Context     : main
 Description : Load IP2Location Nginx module if it was compiled as dynamic.
 ```
 
-
-
-```
-Syntax      : ip2location_access_type file_io|shared_memory|cache_memory
-Default     : cache_memory
-Context     : http
-Description : Set the method used for lookup.
-```
-
 ```
 Syntax      : ip2location_database path
 Default     : none
@@ -112,7 +103,6 @@ Description : Set a list of proxies to translate x-forwarded-for headers for.
 http {
 	...
 	
-	ip2location_access_type			cache_memory;
 	ip2location_database			/usr/share/ip2location/DB6.BIN;
 	ip2location_proxy_recursive		on;
 	ip2location_proxy				192.168.1.0/24;
