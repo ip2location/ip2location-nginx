@@ -1,6 +1,6 @@
 /*
  * IP2Location Nginx module is distributed under MIT license
- * Copyright (c) 2013-2020 IP2Location.com. support at ip2location dot com
+ * Copyright (c) 2013-2021 IP2Location.com. support at ip2location dot com
  *
  * This module is free software; you can redistribute it and/or
  * modify it under the terms of the MIT license
@@ -208,6 +208,18 @@ ngx_http_ip2location_vars[] = {
 		ngx_string("ip2location_usagetype"), NULL,
 		ngx_http_ip2location_get_str_value,
 		offsetof(IP2LocationRecord, usagetype),
+		0, 0
+	},
+	{
+		ngx_string("ip2location_addresstype"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, address_type),
+		0, 0
+	},
+	{
+		ngx_string("ip2location_category"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, category),
 		0, 0
 	},
 

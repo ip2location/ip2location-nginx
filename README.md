@@ -135,6 +135,8 @@ $ip2location_mcc
 $ip2location_mnc
 $ip2location_elevation
 $ip2location_usagetype
+$ip2location_addresstype
+$ip2location_category
 ```
 
 
