@@ -61,8 +61,6 @@ The IP2Location database can be downloaded from https://lite.ip2location.com (Fr
    make install
    ```
 
-
-
 ### Nginx Configuration
 
 Insert the configuration below to your `nginx.conf`.
@@ -103,9 +101,9 @@ Description : Set a list of proxies to translate x-forwarded-for headers for.
 http {
 	...
 	
-	ip2location_database			/usr/share/ip2location/DB6.BIN;
-	ip2location_proxy_recursive		on;
-	ip2location_proxy				192.168.1.0/24;
+	ip2location_database		/usr/share/ip2location/DB6.BIN;
+	ip2location_proxy_recursive	on;
+	ip2location_proxy		192.168.1.0/24;
 }
 ```
 
@@ -151,8 +149,8 @@ server {
 	root /var/www;
 	index index.html index.php;
 
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log;
+	access_log /var/log/nginx/access.log;
+	error_log /var/log/nginx/error.log;
 
 	server_name _;
 
@@ -165,14 +163,20 @@ server {
 		fastcgi_index index.php;
 		include fastcgi.conf;
 
+		# Add custom header to view result in HTTP response
+		add_header X-Country-Code $ip2location_country_short;
+		add_header X-Country-Name $ip2location_country_long;
+
 		fastcgi_param IP2LOCATION_COUNTRY_SHORT       $ip2location_country_short;
 		fastcgi_param IP2LOCATION_COUNTRY_LONG        $ip2location_country_long;
-        fastcgi_param IP2LOCATION_REGION              $ip2location_region;
-        fastcgi_param IP2LOCATION_CITY                $ip2location_city;
-        fastcgi_param IP2LOCATION_ISP                 $ip2location_isp;
+		fastcgi_param IP2LOCATION_REGION              $ip2location_region;
+		fastcgi_param IP2LOCATION_CITY                $ip2location_city;
+		fastcgi_param IP2LOCATION_ISP                 $ip2location_isp;
 	}
 }
 ```
+
+**Notes:** Restart Nginx and view your server response header to confirm the variables are added.
 
 
 
