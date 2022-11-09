@@ -1,5 +1,9 @@
 Refer to https://github.com/ip2location/ip2location-nginx to release notes.
 
+nginx-ip2location-8.1.1
+=======================
+Fixed Nginx CPU 100% usage issue.
+
 nginx-ip2location-8.1.0
 =======================
 Ported codes from https://github.com/chaizhenhua/ngx-ip2location to support all fields in IP2Location database.

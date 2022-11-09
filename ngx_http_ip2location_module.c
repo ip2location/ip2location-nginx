@@ -32,6 +32,7 @@ static char *ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, v
 static char *ngx_http_ip2location_proxy(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_ip2location_cidr_value(ngx_conf_t *cf, ngx_str_t *net, ngx_cidr_t *cidr);
 static void ngx_http_ip2location_cleanup(void *data);
+static IP2Location *ip2location_bin_handler;
 
 static ngx_command_t ngx_http_ip2location_commands[] = {
 	{
@@ -426,6 +427,12 @@ ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return "Duplicated";
 	}
 
+	if (ip2location_bin_handler){
+		//close the bin if it's still opened
+		IP2Location_close(ip2location_bin_handler);
+		ip2location_bin_handler = NULL;
+	}
+
 	value = cf->args->elts;
 
 	if (value[1].len == 0) {
@@ -435,6 +442,7 @@ ngx_http_ip2location_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	// Open IP2Location BIN database
 	gcf->handler = IP2Location_open((char *) value[1].data);
+	ip2location_bin_handler = gcf->handler;
 
 	if (gcf->handler == NULL) {
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unable to open database file \"%s\".", value[1].data);
@@ -509,10 +517,10 @@ ngx_http_ip2location_cidr_value(ngx_conf_t *cf, ngx_str_t *net, ngx_cidr_t *cidr
 static void
 ngx_http_ip2location_cleanup(void *data)
 {
-	ngx_http_ip2location_conf_t	*gcf = data;
+	//ngx_http_ip2location_conf_t	*gcf = data;
 
-	if (gcf->handler) {
-		IP2Location_close(gcf->handler);
-		gcf->handler = NULL;
-	}
+	// if (gcf->handler) {
+	// 	IP2Location_close(gcf->handler);
+	// 	gcf->handler = NULL;
+	// }
 }
