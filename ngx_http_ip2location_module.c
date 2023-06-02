@@ -223,6 +223,24 @@ ngx_http_ip2location_vars[] = {
 		offsetof(IP2LocationRecord, category),
 		0, 0
 	},
+	{
+		ngx_string("ip2location_district"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, district),
+		0, 0
+	},
+	{
+		ngx_string("ip2location_asn"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, asn),
+		0, 0
+	},
+	{
+		ngx_string("ip2location_as"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, as),
+		0, 0
+	},
 
 	ngx_http_null_variable
 };
