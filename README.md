@@ -135,6 +135,9 @@ $ip2location_elevation
 $ip2location_usagetype
 $ip2location_addresstype
 $ip2location_category
+$ip2location_district
+$ip2location_asn
+$ip2location_as
 ```
 
 
