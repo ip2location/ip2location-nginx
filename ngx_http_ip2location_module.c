@@ -241,6 +241,24 @@ ngx_http_ip2location_vars[] = {
 		offsetof(IP2LocationRecord, as),
 		0, 0
 	},
+	{
+		ngx_string("ip2location_as_domain"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, as_domain),
+		0, 0
+	},
+	{
+		ngx_string("ip2location_as_usage_type"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, as_usage_type),
+		0, 0
+	},
+	{
+		ngx_string("ip2location_as_cidr"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, as_cidr),
+		0, 0
+	},
 
 	ngx_http_null_variable
 };
