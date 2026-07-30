@@ -110,6 +110,12 @@ ngx_http_ip2location_vars[] = {
 		0, 0
 	},
 	{
+		ngx_string("ip2location_district"), NULL,
+		ngx_http_ip2location_get_str_value,
+		offsetof(IP2LocationRecord, district),
+		0, 0
+	},
+	{
 		ngx_string("ip2location_city"), NULL,
 		ngx_http_ip2location_get_str_value,
 		offsetof(IP2LocationRecord, city),
@@ -221,12 +227,6 @@ ngx_http_ip2location_vars[] = {
 		ngx_string("ip2location_category"), NULL,
 		ngx_http_ip2location_get_str_value,
 		offsetof(IP2LocationRecord, category),
-		0, 0
-	},
-	{
-		ngx_string("ip2location_district"), NULL,
-		ngx_http_ip2location_get_str_value,
-		offsetof(IP2LocationRecord, district),
 		0, 0
 	},
 	{

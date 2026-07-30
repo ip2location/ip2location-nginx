@@ -12,7 +12,7 @@ The IP2Location database can be downloaded from https://lite.ip2location.com (Fr
 
 ### Installation
 
-1. Download IP2location C library from https://github.com/chrislim2888/IP2Location-C-Library
+1. Download IP2location C library from https://github.com/ip2location/IP2Location-C-Library.
 
 2. Compile and install IP2Location C library.
 
@@ -117,6 +117,7 @@ The following variables will be made available in Nginx:
 $ip2location_country_short
 $ip2location_country_long
 $ip2location_region
+$ip2location_district
 $ip2location_city
 $ip2location_isp
 $ip2location_latitude
@@ -135,9 +136,11 @@ $ip2location_elevation
 $ip2location_usagetype
 $ip2location_addresstype
 $ip2location_category
-$ip2location_district
 $ip2location_asn
 $ip2location_as
+$ip2location_as_domain
+$ip2location_as_usage_type
+$ip2location_as_cidr
 ```
 
 
